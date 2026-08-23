@@ -1,0 +1,27 @@
+# The forge-self register: the catalog of adoptable versions for the forge
+# toolchain. The pipeline is the only writer; every toolchain member enters
+# the internal track by proof, published on green with the minted revision
+# as provenance.
+#
+# Every policy knob is register-level. A consumer can read them and can
+# never set them.
+name: forge-self-register
+
+state:
+  engine: forge://github.com/alexandremahdhaoui/forge-ci/cmd/ci-state-git
+  spec:
+    path: .
+
+params:
+  quarantineDays: 7
+  admissionMaxSeverity: critical
+  deprecateAfterDays: 30
+  staleAfterDays: 180
+  deprecatedGraceDays: 30
+  maxTracksPerPackage: 2
+
+# TEMPORARY: local stand-in while api.osv.dev is unreachable from this
+# environment; every snapshot digest says what was seen. Remove on a
+# machine with feed access and re-run apply to backfill the vectors.
+osv:
+  base: http://127.0.0.1:8797

@@ -1,0 +1,38 @@
+name: forge-self-register
+
+artifactStorePath: .forge/artifact-store.yaml
+
+build: []
+
+# The stages the pipeline drives. Each one is the forge-register CLI, which
+# is how the pipeline stays the index's only writer.
+test:
+  - name: process
+    runner: forge://generic-test-runner
+    spec:
+      command: forge-register
+      args: [process]
+
+  - name: evaluate
+    runner: forge://generic-test-runner
+    spec:
+      command: forge-register
+      args: [evaluate]
+
+  - name: status
+    runner: forge://generic-test-runner
+    spec:
+      command: forge-register
+      args: [status]
+
+  - name: canary
+    runner: forge://generic-test-runner
+    spec:
+      command: sh
+      args: ["hack/canary.sh"]
+
+  - name: publish-members
+    runner: forge://generic-test-runner
+    spec:
+      command: sh
+      args: ["hack/publish-members.sh"]
