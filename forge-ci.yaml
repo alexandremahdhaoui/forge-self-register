@@ -1,0 +1,87 @@
+name: forge-self-register
+
+artifactStorePath: .forge-ci/artifact-store.yaml
+
+repos:
+  - name: forge-self-register
+    url: git@github.com:alexandremahdhaoui/forge-self-register.git
+    ref: main
+
+managers:
+  - alias: local
+    engine: "forge://github.com/alexandremahdhaoui/forge-ci/cmd/ci-manager-local"
+    spec:
+      statePath: .forge-ci/manager-local.json
+
+engines:
+  - alias: here
+    type: compute
+    engine: "forge://github.com/alexandremahdhaoui/forge-ci/cmd/ci-compute-local"
+    manager: local
+
+  # The pipeline's own run records live in forge-self-state, kept apart
+  # from the index this pipeline writes: a run is not a register record.
+  - alias: pipeline-state
+    type: state
+    engine: "forge://github.com/alexandremahdhaoui/forge-ci/cmd/ci-state-git"
+    manager: local
+    spec:
+      path: forge-self-state
+
+  - alias: on-change
+    type: trigger
+    engine: "forge://github.com/alexandremahdhaoui/forge-ci/cmd/ci-trigger-watch"
+    manager: local
+    spec:
+      watch: ["forge-self-register"]
+
+  - alias: all-pass
+    type: promotion
+    engine: "forge://github.com/alexandremahdhaoui/forge-ci/cmd/ci-promotion-all"
+    manager: local
+
+state: pipeline-state
+triggers: [on-change]
+
+targets:
+  - alias: process
+    forge: test run process
+    in: [forge-self-register]
+
+  - alias: evaluate
+    forge: test run evaluate
+    in: [forge-self-register]
+
+  # The canary gate is the toolchain's own test suite. Red means nothing
+  # mints and nothing publishes.
+  - alias: canary
+    forge: test run canary
+    in: [forge-self-register]
+
+stages:
+  - name: process
+    promotion: all-pass
+    substages:
+      - name: default
+        engine: here
+        manager: local
+        targets: [process]
+
+  - name: evaluate
+    promotion: all-pass
+    substages:
+      - name: default
+        engine: here
+        manager: local
+        targets: [evaluate]
+
+  - name: canary
+    # The revision is minted here: only a canary-green index state is a
+    # claim consumers may rely on.
+    mint: true
+    promotion: all-pass
+    substages:
+      - name: default
+        engine: here
+        manager: local
+        targets: [canary]
