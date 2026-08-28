@@ -19,9 +19,3 @@ params:
   staleAfterDays: 180
   deprecatedGraceDays: 30
   maxTracksPerPackage: 2
-
-# TEMPORARY: local stand-in while api.osv.dev is unreachable from this
-# environment; every snapshot digest says what was seen. Remove on a
-# machine with feed access and re-run apply to backfill the vectors.
-osv:
-  base: http://127.0.0.1:8797
