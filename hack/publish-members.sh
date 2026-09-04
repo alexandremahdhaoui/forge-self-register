@@ -40,4 +40,18 @@ for repo in forge forge-ci forge-factory forge-register \
     publish "$repo"
 done
 
+# The toolchain image, under the version the release stage just cut: the
+# factory's own tag is the release line, and release-container pushed the
+# image under that same number before this substage ran. This is what lets
+# the pipeline's own jobs resolve their container from this register with
+# nobody editing the pin, and a consumer register can copy the record from
+# here rather than from a hand.
+image_version=$(git -C "$ROOT/forge-self-factory" describe --tags --abbrev=0 2>/dev/null || true)
+if [ -n "$image_version" ]; then
+    forge-register publish --provenance "$PROVENANCE" \
+        "internal:ghcr.io/alexandremahdhaoui/forge" "$image_version"
+else
+    echo "publish-members: forge-self-factory carries no tag yet; the image track waits for the first release"
+fi
+
 echo "publish-members: every member is on the internal track at $PROVENANCE"
