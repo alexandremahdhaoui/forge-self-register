@@ -1,6 +1,5 @@
 name: forge-self-register
 
-artifactStorePath: .forge-ci/artifact-store.yaml
 
 repos:
   - name: forge-self-register
